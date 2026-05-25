@@ -5,6 +5,8 @@ import AuthLayout from "../AuthLayout";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { toast } from "sonner"; // 🌟 Import sonner
 
 const schema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -15,6 +17,8 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -25,16 +29,29 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: FormData) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    if (result.success) {
-      router.push(result.role === "admin" ? "/admin" : "/");
-    } else {
-      setError("email", { message: result.error || "Login failed" });
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
+        // 🌟 Bắn thông báo đăng nhập thành công dạng Toast bồng bềnh
+        toast.success("Đăng nhập thành công! Đang chuyển hướng...");
+        
+        router.push(result.role === "admin" ? "/admin" : "/");
+      } else {
+        setError("email", { message: result.error || "Đăng nhập thất bại" });
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      toast.error("Lỗi kết nối hệ thống, vui lòng thử lại sau");
+      setIsSubmitting(false);
     }
   };
 
@@ -47,45 +64,45 @@ export default function LoginPage() {
                    text-[var(--color-foreground)]
                    border border-[color-mix(in srgb, var(--color-foreground) 20%, transparent)]"
       >
-        <h1 className="text-2xl font-bold text-center">Login</h1>
+        <h1 className="text-2xl font-bold text-center">Đăng nhập</h1>
 
-        <input
-          {...register("email")}
-          placeholder="Email"
-          className="w-full border rounded px-3 py-2
-                     focus:outline-none focus:ring-2 focus:ring-blue-400
-                     bg-[var(--color-background)] text-[var(--color-foreground)]"
-        />
-        {errors.email && (
-          <p className="text-red-500 text-sm">{errors.email.message}</p>
-        )}
+        {/* Giao diện bên trong form bây giờ cực kỳ sạch sẽ, không cần code khối render thông báo thủ công nữa */}
+        
+        <div>
+          <input
+            {...register("email")}
+            disabled={isSubmitting}
+            placeholder="Email"
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400
+                       bg-[var(--color-background)] text-[var(--color-foreground)] disabled:opacity-50"
+          />
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        </div>
 
-        <input
-          type="password"
-          {...register("password")}
-          placeholder="Password"
-          className="w-full border rounded px-3 py-2
-                     focus:outline-none focus:ring-2 focus:ring-blue-400
-                     bg-[var(--color-background)] text-[var(--color-foreground)]"
-        />
-        {errors.password && (
-          <p className="text-red-500 text-sm">{errors.password.message}</p>
-        )}
+        <div>
+          <input
+            type="password"
+            {...register("password")}
+            disabled={isSubmitting}
+            placeholder="Mật khẩu"
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400
+                       bg-[var(--color-background)] text-[var(--color-foreground)] disabled:opacity-50"
+          />
+          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        </div>
 
         <button
           type="submit"
+          disabled={isSubmitting}
           className="w-full py-2 rounded font-semibold transition-colors
-                     bg-blue-400 text-white hover:bg-blue-500 shadow-md"
+                     bg-blue-400 text-white hover:bg-blue-500 shadow-md disabled:bg-gray-400"
         >
-          Login
+          {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
         </button>
 
         <p className="text-center text-sm">
           Chưa có tài khoản?{" "}
-          <a
-            href="/auth/register"
-            className="text-blue-400 font-medium hover:underline"
-          >
+          <a href="/auth/register" className="text-blue-400 font-medium hover:underline">
             Đăng ký ngay
           </a>
         </p>
