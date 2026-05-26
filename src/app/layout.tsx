@@ -31,7 +31,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AntdThemeProvider>{children}</AntdThemeProvider>
-        <Toaster position="top-center" richColors /></body>
+        <Toaster position="top-center" richColors />
+      </body>
     </html>
   );
 }

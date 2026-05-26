@@ -1,0 +1,29 @@
+### Khai báo URL
+@baseUrl = http://localhost:3000/api
+
+### A. TEST CÔNG KHAI (Không cần Token)
+GET {{baseUrl}}/categories
+x-test-token: super-secret
+
+### B. TEST CÓ QUYỀN (Giả lập Admin bằng Header)
+# Bạn không cần đăng nhập, chỉ cần gửi header này là Middleware sẽ cho qua
+GET {{baseUrl}}/products
+x-test-token: super-secret
+
+### C. TEST THÊM SẢN PHẨM (Giả lập Admin)
+POST {{baseUrl}}/products
+x-test-token: super-secret
+Content-Type: application/json
+
+{
+  "name": "Chuột Gaming Logitech G502",
+  "description": "Chuột chơi game siêu nhạy",
+  "price": "1250000",
+  "stock": 15,
+  "categoryId": 1
+}
+
+### D. TEST BẮT LỖI 401 (Kiểm tra logic Frontend)
+# Khi bỏ dòng x-test-token, Middleware sẽ trả về 401 Unauthorized
+# Đây là cách bạn test xem Frontend đã hiển thị thông báo lỗi đúng chưa
+GET {{baseUrl}}/products

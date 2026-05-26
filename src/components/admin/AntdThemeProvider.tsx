@@ -1,6 +1,6 @@
 "use client";
 
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme, App } from "antd"; // 🌟 Thêm App vào đây
 import { useEffect, useState } from "react";
 
 export default function AntdThemeProvider({ children }: { children: React.ReactNode }) {
@@ -22,9 +22,11 @@ export default function AntdThemeProvider({ children }: { children: React.ReactN
           colorPrimary: "#1890ff", // Daybreak Blue mặc định
         },
       }}
-      
     >
-      {children}
+      {/* 🌟 Bọc toàn bộ children bằng App để kích hoạt useApp() cho toàn dự án */}
+      <App className="h-full">
+        {children}
+      </App>
     </ConfigProvider>
   );
 }
